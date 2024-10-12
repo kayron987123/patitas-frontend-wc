@@ -59,7 +59,7 @@ public class LoginController {
             LoginResponseDTO loginResponseDTO = monoLoginResponseDTO.block();
 
             if(loginResponseDTO.codigo().equals("00")){
-                LoginModel loginModel = new LoginModel("00", "", loginResponseDTO.nombre());
+                LoginModel loginModel = new LoginModel("00", "", loginResponseDTO.nombreUsuario());
                 model.addAttribute("loginModel", loginModel);
                 return "principal";
             }else {
