@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import pe.edu.cibertec.patittas_frontend_wc_a.dto.LoginRequestDTO;
 import pe.edu.cibertec.patittas_frontend_wc_a.dto.LoginResponseDTO;
+import pe.edu.cibertec.patittas_frontend_wc_a.dto.LogoutRequestDTO;
+import pe.edu.cibertec.patittas_frontend_wc_a.dto.LogoutResponseDTO;
 import pe.edu.cibertec.patittas_frontend_wc_a.viewmodel.LoginModel;
 import reactor.core.publisher.Mono;
 
 
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/login")
 public class LoginControllerAsync {
@@ -47,6 +49,32 @@ public class LoginControllerAsync {
 
         } catch (Exception e) {
             return Mono.just(new LoginResponseDTO("99", "Error: " + e.getMessage(), "", ""));
+        }
+    }
+
+    @PostMapping("/logout-async")
+    public Mono<LogoutResponseDTO> salir(@RequestBody LogoutRequestDTO logoutRequestDTO){
+        System.out.println(logoutRequestDTO.nombreUsuario());
+
+        if (logoutRequestDTO == null) {
+            return Mono.just(new LogoutResponseDTO("99", "Error: No se pudo cerrar la sesion"));
+        }
+
+        try {
+            return webClientAutenticacion.post()
+                    .uri("/logout")
+                    .body(Mono.just(logoutRequestDTO), LogoutRequestDTO.class)
+                    .retrieve()
+                    .bodyToMono(LogoutResponseDTO.class)
+                    .flatMap(response -> {
+                        if(response.codigo().equals("00")){
+                            return Mono.just(new LogoutResponseDTO("00", ""));
+                        }else {
+                            return Mono.just(new LogoutResponseDTO("02", "Error: logout fallido"));
+                        }
+                    });
+        }catch (Exception e){
+            return Mono.just(new LogoutResponseDTO("99", "Error: " + e.getMessage()));
         }
     }
 }
